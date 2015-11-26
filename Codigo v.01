@@ -1,0 +1,189 @@
+import pygame # importo el modulo
+
+class Fondo(pygame.sprite.Sprite):
+    def __init__(self):
+        self.imagen=pygame.image.load("fondo.jpg").convert_alpha()
+        self.rect=self.imagen.get_rect() 
+    def update (self, pantalla, vx, vy):
+        pantalla.blit(self.imagen, self.rect)
+        
+class Disparo(pygame.sprite.Sprite):
+    def __init__(self):
+        self.imagen=pygame.image.load("bala.png").convert_alpha()
+        self.rectDisp = self.imagen.get_rect()
+        
+    def update(self, pantalla, dx, dy, yadisparo):
+        self.aparecio = False
+        
+        if self.aparecio == False:
+            self.rectDisp.top,self.rectDisp.left=(dx,dy)
+            self.aparecio == True
+        else:
+            if yadisparo == True:
+                pantalla.blit(self.imagen, self.rectDisp)
+                self.rectDisp.top -=15
+
+
+class Player(pygame.sprite.Sprite):
+    def __init__(self):
+        self.imagen=pygame.image.load("nave.png").convert_alpha()
+        self.imagen2=pygame.image.load("naveDer.png").convert_alpha()
+        self.imagen3=pygame.image.load("naveIzq.png").convert_alpha()
+        
+        self.imagenes=[self.imagen, self.imagen2, self.imagen3]
+    
+        
+        self.imagen_actual=0
+        self.imagen=self.imagenes[self.imagen_actual]
+        
+        self.rect=self.imagen.get_rect()
+        self.rect.top,self.rect.left=(500,450)
+        
+        self.estamoviendo=False
+        self.orientacion=0
+        
+        
+        self.disparo=False
+        
+    def mover(self,vx,vy):
+        self.rect.move_ip(vx,vy)
+             
+             
+      
+             
+                    
+        
+    def update(self, superficie, vx, vy):
+        if (vx,vy)==(0,0):
+            self.estamoviendo=False
+            self.imagen_actual=0
+            self.imagen=self.imagenes[self.imagen_actual]
+        else:self.estamoviendo =True
+        
+        self.derecha = 0
+        self.izquierda = 1
+        self.vertical = 3
+        
+        if vx>0:self.orientacion=self.derecha
+        elif vx<0:self.orientacion=self.izquierda
+        elif vy>0:self.orienacion= self.vertical
+        
+        
+        if self.orientacion== self.derecha and self.estamoviendo:
+            self.imagen_actual=1
+        self.mover(vx,vy)
+        self.imagen=self.imagenes[self.imagen_actual]
+        
+        if self.orientacion== self.izquierda and self.estamoviendo:
+            self.imagen_actual=2
+        self.mover(vx,vy)
+        self.imagen=self.imagenes[self.imagen_actual]
+        
+        if self.orientacion == self.vertical and self.estamoviendo:
+            self.imagen_actual=0
+        self.mover(vx,vy)
+        self.imagen=self.imagenes[self.imagen_actual]
+        
+        
+           
+            
+        superficie.blit(self.imagen,self.rect)
+        
+     
+    
+        
+
+    
+
+#funcion main
+def main():
+    pygame.init() # inicializo el modulo
+    
+    # fijo las dimensiones de la pantalla a 300,300 y creo una superficie que va ser la principal
+    pantalla=pygame.display.set_mode((960,640))
+    
+    pygame.display.set_caption("Pantalla Juego") #Titulo de la Ventana
+    
+    reloj1=pygame.time.Clock()  #creo un reloj para controlar los fps
+    blanco=(255,255,255) # color blanco en RGB
+    
+    
+    
+    
+    player1=Player()
+    fondo1=Fondo()
+    
+    disparo1=Disparo()
+    
+    vx,vy=0,0
+    velocidad=10
+    leftsigueapretada,rightsigueapretada,upsigueapretada,downsigueapretada=False,False,False,False
+    
+    dx,dy=0,0
+    
+    yadisparo = False
+    
+    salir=False #LOOP PRINCIPAL
+    while salir!=True: #recorro todos los eventos producidos
+        for event in pygame.event.get():
+            # si el evento es del tipo 
+            # pygame.QUIT( cruz de la ventana)
+            if event.type == pygame.QUIT:
+                salir=True
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_LEFT:
+                    leftsigueapretada=True
+                    vx=-velocidad
+                if event.key == pygame.K_RIGHT:
+                    rightsigueapretada=True
+                    vx=velocidad
+                if event.key== pygame.K_UP:
+                    upsigueapretada=True
+                    vy=-velocidad
+                if event.key == pygame.K_DOWN:
+                    downsigueapretada=True
+                    vy=velocidad
+            if event.type == pygame.KEYUP:
+                if event.key == pygame.K_LEFT:
+                    leftsigueapretada=False
+                    if rightsigueapretada:vx=velocidad
+                    else:vx=0
+                if event.key == pygame.K_RIGHT:
+                    rightsigueapretada=False
+                    if leftsigueapretada:vx=-velocidad
+                    else:vx=0
+                if event.key== pygame.K_UP:
+                    upsigueapretada=False
+                    if downsigueapretada:vy=velocidad
+                    else:vy=-0
+                if event.key == pygame.K_DOWN:
+                    downsigueapretada=False
+                    if upsigueapretada:vy=-velocidad
+                    else:vy=0
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    yadisparo = True
+                    dx = player1.rect.left
+                    dy = player1.rect.top 
+                
+        
+        reloj1.tick(20)#operacion para que todo corra a 20fps
+        #+=1
+        #if t>1:
+        #    t=0
+            
+        #pantalla.fill(imagenfondo,(0,0))
+        
+        
+        fondo1.update(pantalla, vx, vy)
+        
+        player1.update(pantalla, vx, vy) #Actualizo el player1
+        
+        disparo1.update(pantalla, dx, dy, yadisparo)
+        
+        pygame.display.update() #actualizo el display
+        
+        
+    pygame.quit()
+    
+main() 
